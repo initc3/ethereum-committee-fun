@@ -181,7 +181,7 @@ def test():
 
     for SK in SKs:
         sigs[SK.i] = SK.sign(h)
-	print sigs[SK.i]
+        print sigs[SK.i]
 
     SS = range(PK.l)
     for i in range(1):
@@ -191,6 +191,27 @@ def test():
         assert PK.verify_signature(sig, h)
 
 def gen(players, k, plaintext):
+    global PK, SKs
+    PK, SKs = dealer(players, k)
+
+    global sigs, h
+    sigs = {}
+    h = PK.hash_message(plaintext)
+    h.initPP()
+    for SK in SKs :
+        sigs[SK.i] = SK.sign(h)
+
+    S = range(k)
+    sig = PK.combine_shares(dict((s,sigs[s]) for s in S))
+
+    output = {}
+    output['h'] = serialize(h)
+    output['VK'] = serialize(PK.VK) # 2
+    output['sig'] = serialize(sig) # 1
+        
+    return output
+    
+def gen2(players, k, plaintext):
     global PK, SKs
     PK, SKs = dealer(players, k)
 
@@ -235,7 +256,13 @@ def check(players, k, lh, lPK, lSKs, lsigs) :
         
     return True
 
-def verify(players, k, lh, lPK, lsigs) :
+def verify(VK, h, sig) :
+    VK = deserialize2(VK)
+    sig = deserialize1(sig)
+    h = deserialize1(h)
+    return pair(sig, g2) == pair(h, VK)
+    
+def verify2(players, k, lh, lPK, lsigs) :
     global PK
     PK = lPK
     global sigs, h
