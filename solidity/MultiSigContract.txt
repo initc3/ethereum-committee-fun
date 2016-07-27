@@ -1,0 +1,97 @@
+contract Multisig {
+
+    Proposal[] proposals;
+    address[] signers;
+    uint8 threshold = 3;
+    
+    event SignedSuccessfully(
+        uint indexed proposalID,
+        address recipient,
+        uint amount,
+        address signer,
+        uint numSignatures
+    );
+    
+    event WithdrawComplete(
+        uint indexed proposalID
+    );
+    
+    event ProposalAdded(
+        uint indexed proposalID,
+        address sender,
+        uint totalProposalCount
+    );
+
+    function() {
+        
+    }
+    
+    function Multisig()
+    {
+        address mikeSigner = 0x8A944B7863a8d1519db604d9EcB71Fc092E5B6B5;
+        address sidSigner = 0x92F063DC4a2f9F4DB658092794C7CdFdFA169B41;
+        address hubertSigner = 0xD262051A15B97A28Dda70DAAabd2582Da3F42fB1;
+        
+        signers.push(mikeSigner);
+        signers.push(sidSigner);
+        signers.push(hubertSigner);
+    }
+
+    function proposeWithdraw(address _withdrawAddress, uint _withdrawAmount) returns(uint)
+    {
+        uint index = proposals.length;
+        proposals.length++;
+        Proposal proposal = proposals[index];
+        proposal.withdrawAddress = _withdrawAddress;
+        proposal.withdrawAmount = _withdrawAmount;
+        proposal.completed = false;
+        
+        ProposalAdded(index, msg.sender, proposals.length);
+        
+        return index;
+    }
+    
+    function sign(uint _proposalId) {
+        if(proposals.length <= _proposalId)
+            throw;
+            
+        bool canSign = false;
+        for(uint i=0; i<signers.length; i++)
+        {
+            if(signers[i] == msg.sender)
+            canSign = true;
+        }
+    
+        if(!canSign) 
+            throw;
+            
+        Proposal thisProposal = proposals[_proposalId];
+    
+        for(uint j=0; j<thisProposal.signers.length; j++)
+        {
+            if(thisProposal.signers[j] == msg.sender)
+                throw;
+        }
+        
+        thisProposal.signers.push(msg.sender);
+        SignedSuccessfully(_proposalId, thisProposal.withdrawAddress, thisProposal.withdrawAmount,
+            msg.sender, thisProposal.signers.length);
+    
+        if (msg.value > this.balance)
+            throw;
+    
+        if(thisProposal.signers.length >= threshold && !thisProposal.completed)
+        {
+            thisProposal.completed = true;
+            bool result = thisProposal.withdrawAddress.send(thisProposal.withdrawAmount);
+            WithdrawComplete(_proposalId);
+        }
+    }
+    
+    struct Proposal {
+        address withdrawAddress;
+        uint withdrawAmount;
+        bool completed;
+        address[] signers;
+    }
+}
