@@ -7,47 +7,38 @@
 // MIT License
 //
 
-contract Committee { 
+contract Committee {
     
-    // 85 bytes
-    string VK = "41e833ba80948d6f323827febbc9f703db15a480be4a27c462b038a6729f38d66eeb8741e5a77a564f348aed40332761ea647c765c88a6d2667019519129ca5ebd3251fe8a06f3e048fa475ea7ec4bbb72edd13c01";
-    string messageHash = "49950890efdf1fe41a53581a1fd2382b5079518f2933461caa6212ca01";
-    string signature = "";
-    
-    function checkSignature() {
-        VerifySignature.thresholdVerify(VK, messageHash, signature);
-    }
-    
-}
+    event SubroutineFailed();
+    event SignatureSucceeded(bool);
 
-library VerifySignature {
-
-    event Succeeded(bool);
-    
     // This copies call data (everything, except the method signature) to the precompiled contract.
     function thresholdVerify(string VK, string messageHash, string signature) returns (bool) {
-        uint len;
+        uint len;   
+        
         assembly {
             len := calldatasize()
         }
 
         bytes memory req = new bytes(len - 4);
         bytes memory res = new bytes(32);
+        
 
         uint status;
-
         assembly {
             let alen := len
             calldatacopy(req, 4, alen)
-            call(sub(gas, 150), 5, 0, req, alen, add(res, 32), 32)
+            call(sub(gas, 10000), 5, 0, req, alen, add(res, 32), 32)
             =: status
         }
 
-        if (status != 1)
+        if (status != 1) {
+          SubroutineFailed();
           return false;
+        }
 
-        Succeeded(res[31] == 1);
-        return res[31] == 1;
+        SignatureSucceeded(res[0] == 1);
+        return res[0] == 1;
      }
 
 }
