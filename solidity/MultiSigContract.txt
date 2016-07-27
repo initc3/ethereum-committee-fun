@@ -4,6 +4,13 @@ contract Multisig {
     address[] signers;
     uint8 threshold = 3;
     
+    struct Proposal {
+        address withdrawAddress;
+        uint withdrawAmount;
+        bool completed;
+        address[] signers;
+    }
+    
     event SignedSuccessfully(
         uint indexed proposalID,
         address recipient,
@@ -28,27 +35,32 @@ contract Multisig {
     
     function Multisig()
     {
-        address mikeSigner = 0x8A944B7863a8d1519db604d9EcB71Fc092E5B6B5;
-        address sidSigner = 0x92F063DC4a2f9F4DB658092794C7CdFdFA169B41;
-        address hubertSigner = 0xD262051A15B97A28Dda70DAAabd2582Da3F42fB1;
+        address signer1 = 0x92F063DC4a2f9F4DB658092794C7CdFdFA169B41;
+        address signer2 = 0x822F660e40F04abD0868Fa532F67F257E8ff3519;
+        address signer3 = 0xA7dAa0a623A9e919D4a8C1E71A93a5E3204265Ed;
+        address signer4 = 0xdAFB2B9b9661F3a2F25ae7eA3ae845A61a18b608;
+        address signer5 = 0x92C41b1C21ECAb11658D51360Dcaf57a961391b5;
         
-        signers.push(mikeSigner);
-        signers.push(sidSigner);
-        signers.push(hubertSigner);
+        signers.push(signer1);
+        signers.push(signer2);
+        signers.push(signer3);
+        signers.push(signer4);
+        signers.push(signer5);
     }
 
     function proposeWithdraw(address _withdrawAddress, uint _withdrawAmount) returns(uint)
     {
-        uint index = proposals.length;
-        proposals.length++;
-        Proposal proposal = proposals[index];
-        proposal.withdrawAddress = _withdrawAddress;
-        proposal.withdrawAmount = _withdrawAmount;
-        proposal.completed = false;
+        address[] memory _signers;
+        proposals.push(Proposal({
+            withdrawAddress: _withdrawAddress,
+            withdrawAmount: _withdrawAmount,
+            completed: false,
+            signers: _signers
+        }));
         
-        ProposalAdded(index, msg.sender, proposals.length);
+        ProposalAdded(proposals.length - 1, msg.sender, proposals.length);
         
-        return index;
+        return proposals.length - 1;
     }
     
     function sign(uint _proposalId) {
@@ -86,12 +98,5 @@ contract Multisig {
             bool result = thisProposal.withdrawAddress.send(thisProposal.withdrawAmount);
             WithdrawComplete(_proposalId);
         }
-    }
-    
-    struct Proposal {
-        address withdrawAddress;
-        uint withdrawAmount;
-        bool completed;
-        address[] signers;
     }
 }
