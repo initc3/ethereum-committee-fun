@@ -3,11 +3,12 @@ import bitcoin
 from rlp.utils import ascii_chr
 from secp256k1 import PublicKey, ALL_FLAGS
 
+import ethereum
 from ethereum import utils, opcodes
 from ethereum.utils import safe_ord, decode_hex
 
 import sys
-sys.path.append('/home/siqiu/Project/Sig/')
+sys.path.append('/home/bootcamp/sig')
 from HoneyBadgerBFT.commoncoin import boldyreva
 import cPickle as pickle
 
@@ -95,20 +96,32 @@ def proc_identity(ext, msg):
 
 #verify(env, sigs) -> bool
 def proc_verify_threshold_sig(ext, msg):
-    THRESHOLDBASE = 0
-    THRESHOLDWORD = 0
-    OP_GAS = THRESHOLDBASE + \
-        (utils.ceil32(msg.data.size) // 32) * THRESHOLDWORD
+    OP_GAS = 0
     gas_cost = OP_GAS
     if msg.gas < gas_cost :
         return 0, 0, []
     d = msg.data.extract_all()
-    print d
-    para = pickle.loads(d)
+    if len(d) != 516:
+        # Unknown signature format, cannot verify
+        return 1, msg.gas - gas_cost, [0]
+
+    # VK = signing key
+    VK = d[128:298]
+    # h = message hash
+    h = d[352:410]
+    # sig = group signature of message hash
+    sig = d[448:506]
+
+    print "VK, h, sig"
+    print VK, h, sig    
+
+    ethereum.our_data = d
     
-    if boldyreva.verify(para['n'], para['k'], para['h'], para['PK'], para['sigs']) :
+    if boldyreva.verify(VK.decode("hex"), h.decode("hex"), sig.decode("hex")):
+        print "verified success"
         o = [1]
     else :
+        print "verified fail"
         o = [0]
     return 1, msg.gas - gas_cost, o
 
