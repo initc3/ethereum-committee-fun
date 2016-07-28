@@ -8,7 +8,6 @@ from ethereum import utils, opcodes
 from ethereum.utils import safe_ord, decode_hex
 
 import sys
-sys.path.append('/home/bootcamp/sig')
 from HoneyBadgerBFT.commoncoin import boldyreva
 import cPickle as pickle
 
@@ -115,14 +114,13 @@ def proc_verify_threshold_sig(ext, msg):
     print "VK, h, sig"
     print VK, h, sig    
 
-    ethereum.our_data = d
-    
     if boldyreva.verify(VK.decode("hex"), h.decode("hex"), sig.decode("hex")):
         print "verified success"
         o = [1]
     else :
         print "verified fail"
         o = [0]
+    print o
     return 1, msg.gas - gas_cost, o
 
 specials = {

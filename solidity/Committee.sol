@@ -21,14 +21,14 @@ contract Committee {
         }
 
         bytes memory req = new bytes(len - 4);
-        bytes memory res = new bytes(32);
+        bytes memory res = new bytes(1);
         
 
         uint status;
         assembly {
             let alen := len
             calldatacopy(req, 4, alen)
-            call(sub(gas, 10000), 5, 0, req, alen, add(res, 32), 32)
+            call(sub(gas, 10000), 5, 0, req, alen, add(res, 1), 1)
             =: status
         }
 
