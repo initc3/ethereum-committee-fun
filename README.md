@@ -33,6 +33,12 @@ TODO:
 1. Disributed key generation protocol 
 
 
+Bonus
+-----
+
+Simplest available Ethereum Solidity multisignature contract in solidity/Multisig.sol
+
+
 The Team
 --------
 Phil Daian, Elaine Shi, Hubert Chan, Mike Harder, Sid Harder, Siqiu Yao
