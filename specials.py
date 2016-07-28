@@ -95,7 +95,8 @@ def proc_identity(ext, msg):
 
 #verify(env, sigs) -> bool
 def proc_verify_threshold_sig(ext, msg):
-    OP_GAS = 0
+    OP_GAS = opcodes.GIDENTITYBASE + \
+        opcodes.GIDENTITYWORD * (utils.ceil32(msg.data.size) // 32)
     gas_cost = OP_GAS
     if msg.gas < gas_cost :
         return 0, 0, []
