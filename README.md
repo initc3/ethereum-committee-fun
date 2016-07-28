@@ -23,11 +23,13 @@ Installation
 
 
 Optionally:
+
 1. Generate example signatures with gen.py (or use Honey Badger library for generation)
 2. Remove the debug print statements in specials.py
 
 
 TODO:
+
 1. Disributed key generation protocol 
 
 
